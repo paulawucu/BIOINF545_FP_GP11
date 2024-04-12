@@ -1,4 +1,4 @@
-# BIOINF545_FP_GP11
+## BIOINF545_FP_GP11
 This is the code space for Bioinf 545 class.
 
 Group Members:
@@ -9,6 +9,6 @@ Group Members:
 - Chase Lindeboom
 
 
-SETUP 
+**SETUP**
 
-USAGE
+**USAGE**
