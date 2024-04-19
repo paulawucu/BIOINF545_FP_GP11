@@ -9,14 +9,6 @@ Group Members:
 - Chase Lindeboom
 
 
-**SETUP**
-___
-
-
-
-
-
-**USAGE**
-___
-
+**Analysis Overview**
+![Picture8](https://github.com/paulawucu/BIOINF545_FP_GP11/assets/159296158/0c97939a-cd27-4d19-a468-2ed625aebec5)
 
