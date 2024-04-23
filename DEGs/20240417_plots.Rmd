@@ -1,0 +1,102 @@
+---
+title: "Plot Functions"
+author: "Ashley"
+date: "2024-04-17"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+setwd("/nfs/turbo/dcmb-class/bioinf545/groups/group_11/") 
+```
+
+
+Load Libraries
+```{r cars}
+library(ggplot2)
+library(Seurat)
+library(tidyverse)
+```
+
+Import Data
+```{r}
+#Import Seurat object
+all_integrated_final <- readRDS("/home/abielaws/b545_group11/Integrated_clustering_2/all_integrated_final.rds")
+all_integrated_DEGS <- readRDS("/home/abielaws/b545_group11/group_11_AMB/all_integrated_DEGS.rds")
+```
+
+```{r}
+#Read in file
+Harmony_DEGs <- readRDS("Harmony_DEGs.rds")
+de_YS_0 <- readRDS("de_YS_0.rds")
+de_YS_1 <- readRDS("de_YS_1.rds")
+
+# Get unique cluster numbers
+unique_clusters <- unique(Harmony_DEGs$cluster)
+
+# Create a list to store subsets
+subset_tables <- list()
+
+# Loop through unique cluster numbers
+for (cluster_num in unique_clusters) {
+  # Subset the original table for rows with the current cluster number
+  subset_tables[[cluster_num]] <- Harmony_DEGs[Harmony_DEGs$cluster == cluster_num, ]
+  
+  # Optionally, you can save each subset table to a separate file
+  # Replace "subset_table_cluster_x.csv" with your desired file naming convention
+  write.csv(subset_tables[[cluster_num]], file = paste0("subset_table_cluster_", cluster_num, ".csv"), row.names = FALSE)
+}
+```
+
+
+```{r}
+cluster_0 <- subset_tables[[1]]
+```
+
+
+
+Volcano Plot
+```{r}
+#Define parameters
+logFC_cutoff <- 1  # Fold change cutoff
+pvalue_cutoff <- 0.05  # p-value cutoff
+
+generate_volcano_plot <- function(data, logFC_cutoff = 1, pvalue_cutoff = 0.05) {
+  volcano_plot <- ggplot(data, 
+                         aes(x = avg_log2FC, y = -log10(p_val_adj))) +
+    geom_point(aes(color = ifelse(avg_log2FC > logFC_cutoff & p_val_adj < pvalue_cutoff, "red", ifelse(avg_log2FC < -logFC_cutoff & p_val_adj < pvalue_cutoff, "blue", "black"))), alpha = 0.6) +
+    scale_color_manual(name = "legend", 
+                       values = c("red" = "red", "blue" = "blue", "black" = "black"),
+                       labels = c("unchanged", "downregulated", "upregulated")) +
+    geom_hline(yintercept = -log10(pvalue_cutoff), 
+               linetype = "dashed", 
+               color = "black") +
+    geom_vline(xintercept = c(-logFC_cutoff, logFC_cutoff), 
+               linetype = "dashed", color = "black") +
+    labs(x = "Log2 Fold Change", y = "-log10(P-value)", title = "Volcano Plot") +
+    theme_minimal() +
+    theme(legend.position = "none", #remove the legend
+          panel.grid.major = element_blank(), #remove the major gridlines
+          panel.grid.minor = element_blank()) #remove the minor gridlines
+  return(volcano_plot)
+}
+```
+
+
+
+Make volcano plots for every table in a list
+```{r}
+for (i in seq_along(subset_tables)) {
+  # Generate a volcano plot for the current table
+  current_table <- subset_tables[[i]]
+  volcano_plot <- generate_volcano_plot(current_table)
+  ggsave(paste0("volcano_plot_", i, ".pdf"), plot = volcano_plot,
+         width = 8, height = 6)
+  
+  # Print or save the volcano plot as desired
+  # Example: print(volcano_plot)
+  # Example: ggsave(paste0("volcano_plot_", i, ".pdf"), plot = volcano_plot)
+}
+```
+
